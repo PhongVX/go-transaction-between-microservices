@@ -1,6 +1,7 @@
 # github.com/PhongVX/micro-protos v0.0.0-20210912111658-1fbfb21bb736
 ## explicit
 github.com/PhongVX/micro-protos/order
+github.com/PhongVX/micro-protos/product
 github.com/PhongVX/micro-protos/transaction
 # github.com/golang/protobuf v1.5.2
 ## explicit

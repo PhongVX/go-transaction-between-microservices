@@ -5,9 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/PhongVX/micro-protos/order"
+	"github.com/PhongVX/micro-protos/product"
 	"github.com/PhongVX/micro-protos/transaction"
 	"log"
 	"net"
+	"orchestrator/internal/productx"
 	"orchestrator/internal/transactionx"
 	"orchestrator/pkg/db"
 	"os"
@@ -71,7 +73,10 @@ func main() {
 	orderRepos := orderx.NewRepository(txSrv)
 	orderGSrv := orderx.NewGService(orderRepos)
 	order.RegisterOrderServer(grpcServer, orderGSrv)
-
+	//Product
+	productRepos := productx.NewRepository(txSrv)
+	productGSrv := productx.NewGService(productRepos)
+	product.RegisterProductServer(grpcServer, productGSrv)
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatal(err)
