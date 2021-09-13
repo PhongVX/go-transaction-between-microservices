@@ -38,6 +38,7 @@ func (t *Service) Commit(correlationID string) error{
 	if tx, ok := t.MapTx[correlationID]; ok {
 		err := tx.Commit()
 		if err != nil {
+			delete(t.MapTx, correlationID)
 			return err
 		}
 		delete(t.MapTx, correlationID)
@@ -49,6 +50,7 @@ func (t *Service) Rollback(correlationID string) error{
 	if tx, ok := t.MapTx[correlationID]; ok {
 		err := tx.Rollback()
 		if err != nil {
+			delete(t.MapTx, correlationID)
 			return err
 		}
 		delete(t.MapTx, correlationID)

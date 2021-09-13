@@ -2,9 +2,11 @@ package orderx
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/PhongVX/micro-protos/order"
 	"github.com/PhongVX/micro-protos/transaction"
 	"log"
+	"order/pkg/http/request"
 )
 
 type (
@@ -55,10 +57,29 @@ func (s *Service) InsertOrder(ctx context.Context, o OrderRequest) (*string, err
 			TotalPrice: od.TotalPrice,
 		})
 		//3 Call HTTP API Update Product Quantity
-		//if err != nil {
-		//	s.gTransactionC.Rollback(ctx, txInfo)
-		//	return nil, err
-		//}
+		pReq := ProductRequest{
+			Header: Header{
+				CorrelationID: o.Header.CorrelationID,
+			},
+			Body: Product{
+				ID: od.ProductID,
+				Quantity: od.Quantity,
+			},
+		}
+		pBytes, err := json.Marshal(pReq)
+		if err != nil {
+			return nil, err
+		}
+		resP, err := request.Put(productAPI, pBytes)
+		if err != nil {
+			s.gTransactionC.Rollback(ctx, txInfo)
+			return nil, err
+		}
+		if resP.ID == nil {
+			s.gTransactionC.Rollback(ctx, txInfo)
+			return nil, err
+		}
+
 	}
 	//4. Insert Order Detail
 	_, err = s.gOrderC.InsertOrderDetail(ctx, &order.InsertOrderDetailRequest{

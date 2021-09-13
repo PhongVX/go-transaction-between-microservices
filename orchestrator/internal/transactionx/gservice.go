@@ -31,7 +31,7 @@ func (s *GService) Commit(ctx context.Context, in *transaction.CommonTxDoActionR
 func  (s *GService) Rollback(ctx context.Context, in *transaction.CommonTxDoActionRequest) (*transaction.CommonTxResponse, error){
 	ok := true
 	if in.BeginTxRes.IsRenew {
-		err := s.txSrv.Commit(in.CorrelationID)
+		err := s.txSrv.Rollback(in.CorrelationID)
 		if err != nil {
 			ok = false
 			return &transaction.CommonTxResponse{Ok: ok}, err

@@ -5,7 +5,6 @@ import (
 
 	"github.com/PhongVX/micro-protos/product"
 	"github.com/PhongVX/micro-protos/transaction"
-	"log"
 )
 
 type (
@@ -26,7 +25,7 @@ func (s *Service) UpdateProduct(ctx context.Context, p UpdateProductRequest) (*i
 	txRequest := &transaction.BeginTxRequest{CorrelationID: p.Header.CorrelationID}
 	txRes, err := s.gTransactionC.BeginTx(ctx, txRequest)
 	if err != nil {
-		log.Println("Failed to begin transaction")
+		return nil, err
 	}
 	productRequest := product.UpdateProductRequest{
 		CorrelationID: p.Header.CorrelationID,

@@ -31,6 +31,16 @@ type (
 		Body   Order  `json:"body"`
 	}
 
+	ProductRequest struct {
+		Header Header `json:"header"`
+		Body   Product  `json:"body"`
+	}
+
+	Product struct {
+		ID int32 `json:"id"`
+		Quantity int32 `json:"quantity"`
+	}
+
 	Handler struct {
 		srv ServiceI
 	}

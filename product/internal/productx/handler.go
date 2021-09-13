@@ -24,7 +24,7 @@ func (h *Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
-	response.JSON(w, http.StatusOK, map[string]*int{
-		"id": o.Body.ID,
+	response.JSON(w, http.StatusOK, response.Base{
+		ID: o.Body.ID,
 	})
 }

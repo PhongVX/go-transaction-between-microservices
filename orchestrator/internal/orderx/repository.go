@@ -41,6 +41,9 @@ func (r *Repository) InsertOrderDetail(ctx context.Context, o *order.InsertOrder
 	for _, od := range o.OrderDetails {
 		queryString := `INSERT INTO order_detail(order_id, product_id, quantity, price, total_price) VALUES($1, $2, $3, $4, $5)`
 		rs, err := tx.Exec(queryString, od.OrderID, od.ProductID, od.Quantity, od.Price, od.TotalPrice)
+		if err != nil {
+			return nil, err
+		}
 		rowAffected, err := rs.RowsAffected()
 		if err != nil {
 			return nil, err
