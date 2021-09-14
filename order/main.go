@@ -2,73 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
-	"net/http"
 	"order/internal/app"
-	"order/pkg/http/request"
-	"order/pkg/http/response"
 	"os"
 	"os/signal"
 	"time"
 )
-
-type (
-	Header struct {
-		CorrelationID string `json:"correlationID"`
-	}
-
-	Order struct {
-		ID         *string `json:"id"`
-		CustomerID string  `json:"customerID"`
-		TotalPrice string  `json:"totalPrice"`
-	}
-
-	OrderRequest struct {
-		Header Header `json:"header"`
-		Body   Order  `json:"body"`
-	}
-)
-
-
-func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
-	var o OrderRequest
-	if err := json.NewDecoder(r.Body).Decode(&o); err != nil {
-		response.Error(w, err, http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-	res := &response.Base{}
-	err := request.Get(fmt.Sprintf(`http://localhost:8080/api/v1/sql/transaction/begin/%s`, o.Header.CorrelationID), &res)
-	if err != nil {
-		response.Error(w, err, http.StatusBadRequest)
-		return
-	}
-	id, err := InsertOrderService(o)
-	if err != nil {
-		response.Error(w, err, http.StatusBadRequest)
-		return
-	}
-	//Commit
-	err = request.Get(fmt.Sprintf(`http://localhost:8080/api/v1/sql/transaction/commit/%s`, o.Header.CorrelationID), &res)
-	if err != nil {
-		response.Error(w, err, http.StatusBadRequest)
-		return
-	}
-	response.JSON(w, http.StatusOK, response.Base{
-		ID: id,
-	})
-}
-
-func InsertOrderService(o OrderRequest) (*string, error) {
-	//res, err := request.Post("http://localhost:8080/api/v1/order/create", nil)
-	//if err != nil {
-	//	return nil, err
-	//}
-	return nil, nil
-}
 
 func main() {
 	var wait time.Duration

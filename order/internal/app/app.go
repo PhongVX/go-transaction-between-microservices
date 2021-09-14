@@ -2,19 +2,17 @@ package app
 
 import (
 	"context"
+	"github.com/PhongVX/micro-protos/order"
+	"github.com/PhongVX/micro-protos/transaction"
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
 	"order/internal/route"
-
-	"github.com/PhongVX/micro-protos/order"
-	"github.com/PhongVX/micro-protos/transaction"
 )
 
-const (
+var (
 	serviceAddress = ":8081"
 	gRPCAddres = "localhost:9999"
-
 )
 
 func New() AppI {
