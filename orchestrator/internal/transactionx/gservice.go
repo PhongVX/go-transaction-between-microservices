@@ -5,6 +5,12 @@ import (
 	"github.com/PhongVX/micro-protos/transaction"
 )
 
+type GServiceI interface {
+	BeginTx(context.Context, *transaction.BeginTxRequest) (*transaction.BeginTxResponse, error)
+	Commit(context.Context, *transaction.CommonTxDoActionRequest) (*transaction.CommonTxResponse, error)
+	Rollback(context.Context, *transaction.CommonTxDoActionRequest) (*transaction.CommonTxResponse, error)
+}
+
 func NewGService(txSrv ServiceI) *GService {
 	return &GService{
 		txSrv: txSrv,
@@ -12,7 +18,7 @@ func NewGService(txSrv ServiceI) *GService {
 }
 
 func (s *GService) BeginTx(ctx context.Context, in *transaction.BeginTxRequest) (*transaction.BeginTxResponse, error){
-	_, isRenew, err := s.txSrv.BeginTx(in.CorrelationID)
+	isRenew, err := s.txSrv.BeginTx(in.CorrelationID)
 	return &transaction.BeginTxResponse{IsRenew: isRenew}, err
 }
 

@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/go-redis/redis/v8"
 	"log"
-
 	"orchestrator/pkg/db"
 	"os"
 	"os/signal"
@@ -17,6 +17,14 @@ func main() {
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
+	//TODO Read from config file instead of hard code
+	//Connect Redis
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+		Password: "123456",
+		DB: 0,
+	})
+
 	//Connect DB
 	dbConn, err := db.NewDB(&db.Config{
 		Driver: "postgres",
@@ -29,12 +37,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	server := app.New(dbConn)
+
+	server := app.New(dbConn, redisClient)
+
 	go func(){
 		if err := server.Start(); err != nil {
 			panic(err)
 		}
 	}()
+
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
 	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
@@ -42,7 +53,6 @@ func main() {
 
 	// Block until we receive our signal.
 	<-c
-
 	// Create a deadline to wait for.
 	_, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()

@@ -8,10 +8,13 @@ import (
 	"net"
 	"orchestrator/internal/orderx"
 	"orchestrator/internal/productx"
+	"orchestrator/internal/redisx"
+	"orchestrator/internal/transactioncache"
 	"orchestrator/internal/transactionx"
 
 	"github.com/PhongVX/micro-protos/order"
 	"github.com/PhongVX/micro-protos/transaction"
+	"github.com/go-redis/redis/v8"
 )
 
 const (
@@ -23,11 +26,15 @@ type ServerI interface {
 	Stop()
 }
 
-func New(db *sql.DB) ServerI {
+func New(db *sql.DB, redisClient *redis.Client) ServerI {
 	//Grpc Service
 	grpcServer := grpc.NewServer()
+	//TransactionCache
+	txCacheSrv := transactioncache.NewTransactionCacheSrv()
+	//Redis Service
+	redisService := redisx.NewRedisSrv(redisClient, txCacheSrv)
 	//Transaction
-	txSrv := transactionx.NewTransactionSrv(db)
+	txSrv := transactionx.NewTransactionSrv(db, redisService, txCacheSrv)
 	txGSrv := transactionx.NewGService(txSrv)
 	transaction.RegisterTransactionServer(grpcServer, txGSrv)
 	//Order
