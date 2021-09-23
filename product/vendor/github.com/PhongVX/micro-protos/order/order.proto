@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package order;
+
+option go_package="./order";
+
+import "transaction/transaction.proto";
+
+service Order {
+  rpc InsertOrder (InsertOrderRequest) returns (InsertOrderResponse) {}
+  rpc InsertOrderDetail (InsertOrderDetailRequest) returns (InsertOrderDetailResponse) {}
+}
+
+message OrderDetail {
+    int32 productID = 1;
+    int32 quantity = 2;
+    double price = 3;
+    double totalPrice = 4;
+    string orderID = 5;
+}
+
+message InsertOrderRequest {
+  string correlationID = 1;
+  string phoneNumber = 2;
+  double totalPrice = 3;
+  string name = 4;
+  string address = 5;
+  transaction.BeginTxResponse beginTxRes = 6;
+}
+
+message InsertOrderDetailRequest {
+  string correlationID = 1;
+  string txRandomID = 2;
+  repeated OrderDetail orderDetails = 3;
+  transaction.BeginTxResponse beginTxRes = 6;
+}
+
+message InsertOrderResponse {
+  int32 rowAffected = 1;
+  string id = 2;
+}
+
+message InsertOrderDetailResponse {
+  int32 rowAffected = 1;
+  string id = 2;
+}

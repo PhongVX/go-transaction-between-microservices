@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package product;
+
+option go_package="./product";
+
+import "transaction/transaction.proto";
+
+service Product {
+  rpc UpdateProduct (UpdateProductRequest) returns (UpdateProductResponse) {}
+}
+
+message UpdateProductRequest {
+  string correlationID = 1;
+  int32 ID=2;
+  int32 quantity=3;
+  transaction.BeginTxResponse beginTxRes = 4;
+}
+
+message UpdateProductResponse {
+  int32 rowAffected = 1;
+}

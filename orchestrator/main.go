@@ -23,6 +23,7 @@ func main() {
 		Addr: "localhost:6379",
 		Password: "123456",
 		DB: 0,
+		MaxRetries: 3,
 	})
 
 	//Connect DB

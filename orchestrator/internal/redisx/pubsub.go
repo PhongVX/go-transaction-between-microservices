@@ -16,7 +16,8 @@ type ServiceI interface {
 	Get(ctx context.Context, key string) (string, error)
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	Del(ctx context.Context, keys ...string) error
-	SubscribeTransactionActions(ctx context.Context, topic string, tx *sql.Tx)
+	Keys(ctx context.Context, pattern string) ([]string, error)
+	SubscribeTransactionActions(ctx context.Context, correlationID string, txRandomID string, tx *sql.Tx)
 	PublishTransactionActions(ctx context.Context, topic string, action string) error
 }
 
@@ -27,55 +28,116 @@ func NewRedisSrv(redisClient *redis.Client, txCacheSrv transactioncache.ServiceI
 	}
 }
 
-func (s *Service) SubscribeTransactionActions(ctx context.Context, topic string, tx *sql.Tx)  {
-	t := s.redisClient.Subscribe(ctx, topic)
+func (s *Service) SubscribeTransactionActions(ctx context.Context,  correlationID string, txRandomID string, tx *sql.Tx)  {
+	topicKey :=  correlationID+"_"+txRandomID
+	expirationTime := constx.ExpiredMinutes
+
+	// Listen message Commit, Rollback local transaction
+	tTx := s.redisClient.Subscribe(ctx, correlationID)
 	go func() {
 		for  {
-			// Checking time live of a topic
 			//TODO read time alive of topic from config file
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute * 10)
+			ctx, cancel := context.WithTimeout(context.Background(), expirationTime)
 			defer cancel()
-			msg, err := t.ReceiveMessage(ctx)
+			msg, err := tTx.ReceiveMessage(ctx)
 			if err != nil {
-				t.Close()
-				fmt.Println(err)
-				//Delete from redis cache and memory cache
-				s.txCacheSrv.Remove(topic)
-				s.redisClient.Del(context.Background(), topic)
+				s.txCacheSrv.Remove(topicKey)
+				s.redisClient.Del(context.Background(), topicKey)
+				tx.Rollback()
+				tTx.Close()
 				return
 			}
 			var txInfo msgx.TransactionInfo
 			if err := json.Unmarshal([]byte(msg.Payload), &txInfo); err != nil {
-				t.Close()
-				s.txCacheSrv.Remove(topic)
-				s.redisClient.Del(context.Background(), topic)
+				s.txCacheSrv.Remove(topicKey)
+				s.redisClient.Del(context.Background(), topicKey)
+				tx.Rollback()
+				tTx.Close()
 				return
 			}
 			switch txInfo.Action {
 			case constx.Commit:
+				s.txCacheSrv.Remove(topicKey)
+				s.redisClient.Del(context.Background(), topicKey)
 				tx.Commit()
-				t.Close()
-				s.txCacheSrv.Remove(topic)
-				s.redisClient.Del(context.Background(), topic)
+				tTx.Close()
 				return
 			case constx.RollBack:
+				s.txCacheSrv.Remove(topicKey)
+				s.redisClient.Del(context.Background(), topicKey)
 				tx.Rollback()
-				t.Close()
-				s.txCacheSrv.Remove(topic)
-				s.redisClient.Del(context.Background(), topic)
+				tTx.Close()
+				return
+			}
+		}
+	}()
+	// Listen message change state on redis cache
+	tRd := s.redisClient.Subscribe(ctx, topicKey)
+	go func(){
+		for {
+			_, cancel := context.WithTimeout(context.Background(), expirationTime)
+			defer cancel()
+			msg, err := tRd.ReceiveMessage(ctx)
+			if err != nil {
+				tRd.Close()
+				s.PublishTransactionActions(context.Background(), correlationID, constx.RollBack)
+				return
+			}
+			var txInfo msgx.TransactionInfo
+			if err := json.Unmarshal([]byte(msg.Payload), &txInfo); err != nil {
+				tRd.Close()
+				s.PublishTransactionActions(context.Background(), correlationID, constx.RollBack)
+				return
+			}
+			switch txInfo.Action {
+			case constx.Commit:
+				err := s.Set(context.Background(), topicKey, constx.True, expirationTime)
+				if err != nil {
+					tRd.Close()
+					s.PublishTransactionActions(context.Background(), correlationID, constx.RollBack)
+					return
+				}
+				rs, err := s.Keys(context.Background(), fmt.Sprintf("%s_*", correlationID))
+				if err != nil {
+					tRd.Close()
+					s.PublishTransactionActions(context.Background(), correlationID, constx.RollBack)
+					return
+				}
+				count := 0
+				for _, k := range rs {
+					v, err := s.Get(context.Background(), k)
+					if err != nil {
+						tRd.Close()
+						s.PublishTransactionActions(context.Background(), correlationID, constx.RollBack)
+						return
+					}
+					if v == constx.True {
+						count++
+					}
+				}
+				if count == len(rs) {
+					s.PublishTransactionActions(context.Background(), correlationID, constx.Commit)
+				}
+				tRd.Close()
+				return
+			case constx.RollBack:
+				s.PublishTransactionActions(context.Background(), correlationID, constx.RollBack)
+				tRd.Close()
 				return
 			}
 		}
 	}()
 }
 
-func (s *Service) PublishTransactionActions(ctx context.Context, topic string, action string) error  {
+func (s *Service) PublishTransactionActions(ctx context.Context,  topic string, action string) error  {
 	txInfo := &msgx.TransactionInfo{CorrelationID: topic, Action: action}
 	txInfoBytes, err := json.Marshal(txInfo)
 	if err != nil {
 		return err
 	}
+	//TODO publish retry should be implement
 	if err := s.redisClient.Publish(ctx, topic, txInfoBytes).Err(); err != nil {
+		//TODO implement dead letter queue
 		return err
 	}
 	return nil

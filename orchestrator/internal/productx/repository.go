@@ -17,7 +17,7 @@ func NewRepository(txSrv transactionx.ServiceI) *Repository{
 }
 
 func (r *Repository)UpdateProduct(ctx context.Context, p *product.UpdateProductRequest) (*product.UpdateProductResponse, error){
-	tx, err := r.txSrv.GetTxByCorrelationID(p.CorrelationID)
+	tx, err := r.txSrv.GetTxByCorrelationID(p.CorrelationID, p.BeginTxRes.TxRandomID)
 	if err != nil {
 		return nil, err
 	}

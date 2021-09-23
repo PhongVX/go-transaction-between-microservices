@@ -16,3 +16,7 @@ func (s *Service) Set(ctx context.Context, key string, value interface{}, expira
 func (s *Service) Del(ctx context.Context, keys ...string) error {
 	return s.redisClient.Del(ctx, keys...).Err()
 }
+
+func (s *Service) Keys(ctx context.Context, pattern string) ([]string, error) {
+	return s.redisClient.Keys(ctx, pattern).Result()
+}

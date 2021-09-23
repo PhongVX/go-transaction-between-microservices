@@ -19,7 +19,7 @@ func NewRepository(txSrv transactionx.ServiceI) *Repository{
 }
 
 func (r *Repository)InsertOrder(ctx context.Context, o *order.InsertOrderRequest) (*order.InsertOrderResponse, error) {
-	tx, err := r.txSrv.GetTxByCorrelationID(o.CorrelationID)
+	tx, err := r.txSrv.GetTxByCorrelationID(o.CorrelationID, o.BeginTxRes.TxRandomID)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (r *Repository)InsertOrder(ctx context.Context, o *order.InsertOrderRequest
 }
 
 func (r *Repository) InsertOrderDetail(ctx context.Context, o *order.InsertOrderDetailRequest) (*order.InsertOrderDetailResponse, error){
-	tx, err := r.txSrv.GetTxByCorrelationID(o.CorrelationID)
+	tx, err := r.txSrv.GetTxByCorrelationID(o.CorrelationID, o.BeginTxRes.TxRandomID)
 	if err != nil {
 		return nil, err
 	}
