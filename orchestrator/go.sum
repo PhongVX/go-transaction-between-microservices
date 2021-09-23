@@ -7,6 +7,8 @@ github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PhongVX/micro-protos v0.0.0-20210912111658-1fbfb21bb736 h1:DE8yWnC2Dcka90vTB0IPkRhALtFP6hVUlcXIN3Mdw4M=
 github.com/PhongVX/micro-protos v0.0.0-20210912111658-1fbfb21bb736/go.mod h1:HxuiHtpAKl4OjNNoEubGLEdV+MBixj2MSqiz7CaIi3M=
+github.com/PhongVX/micro-protos v1.0.0 h1:QF/DJSxCfVauUVLlg3625/jj9xub5IiKJCo0DFiuRqs=
+github.com/PhongVX/micro-protos v1.0.0/go.mod h1:HxuiHtpAKl4OjNNoEubGLEdV+MBixj2MSqiz7CaIi3M=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/4+TcAqDqk/vUH7g=
