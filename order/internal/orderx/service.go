@@ -26,6 +26,7 @@ func (s *Service) InsertOrder(ctx context.Context, o OrderRequest) (*string, err
 	//1. Begin Transaction
 	txRequest := &transaction.BeginTxRequest{CorrelationID: o.Header.CorrelationID}
 	txRes, err := s.gTransactionC.BeginTx(ctx, txRequest)
+
 	if err != nil {
 		log.Println("Failed to begin transaction")
 	}
@@ -35,13 +36,19 @@ func (s *Service) InsertOrder(ctx context.Context, o OrderRequest) (*string, err
 		Address: o.Body.Address,
 		Name :o.Body.Name,
 		TotalPrice: o.Body.TotalPrice,
+		BeginTxRes: txRes,
 	}
-	//2. Insert To Order Table
-	orderRes, err := s.gOrderC.InsertOrder(ctx, &orderRequest)
 	txInfo := &transaction.CommonTxDoActionRequest{
 		CorrelationID: o.Header.CorrelationID,
 		BeginTxRes: txRes,
 	}
+	//2. Insert To Order Table
+	orderRes, err := s.gOrderC.InsertOrder(ctx, &orderRequest)
+	if err != nil {
+		s.gTransactionC.Rollback(ctx, txInfo)
+		return nil, err
+	}
+
 	if err != nil {
 		s.gTransactionC.Rollback(ctx, txInfo)
 		return nil, err
@@ -82,9 +89,10 @@ func (s *Service) InsertOrder(ctx context.Context, o OrderRequest) (*string, err
 
 	}
 	//4. Insert Order Detail
-	_, err = s.gOrderC.InsertOrderDetail(ctx, &order.InsertOrderDetailRequest{
+	_, err = s.gOrderC.InsertOrderDetail(context.Background(), &order.InsertOrderDetailRequest{
 		CorrelationID: o.Header.CorrelationID,
 		OrderDetails: orderDetails,
+		BeginTxRes: txRes,
 	})
 	if err != nil {
 		s.gTransactionC.Rollback(ctx, txInfo)

@@ -13,7 +13,7 @@ import (
 
 const (
 	serviceAddress = ":8082"
-	gRPCAddres = "localhost:9999"
+	gRPCAddres = "localhost:9998"
 
 )
 

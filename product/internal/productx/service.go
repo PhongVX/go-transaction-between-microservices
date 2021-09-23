@@ -31,9 +31,11 @@ func (s *Service) UpdateProduct(ctx context.Context, p UpdateProductRequest) (*i
 		CorrelationID: p.Header.CorrelationID,
 		ID: int32(*p.Body.ID),
 		Quantity: p.Body.Quantity,
+		BeginTxRes: txRes,
 	}
 	//2. Insert To Order Table
 	productRes, err := s.gProductC.UpdateProduct(ctx, &productRequest)
+
 	txInfo := &transaction.CommonTxDoActionRequest{
 		CorrelationID: p.Header.CorrelationID,
 		BeginTxRes: txRes,

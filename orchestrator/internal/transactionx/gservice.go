@@ -18,14 +18,14 @@ func NewGService(txSrv ServiceI) *GService {
 }
 
 func (s *GService) BeginTx(ctx context.Context, in *transaction.BeginTxRequest) (*transaction.BeginTxResponse, error){
-	isRenew, err := s.txSrv.BeginTx(in.CorrelationID)
-	return &transaction.BeginTxResponse{IsRenew: isRenew}, err
+	isRenew, txRandomID, err := s.txSrv.BeginTx(in.CorrelationID)
+	return &transaction.BeginTxResponse{IsRenew: isRenew, TxRandomID: txRandomID}, err
 }
 
 func (s *GService) Commit(ctx context.Context, in *transaction.CommonTxDoActionRequest) (*transaction.CommonTxResponse, error){
 	ok := true
 	if in.BeginTxRes.IsRenew {
-		err := s.txSrv.Commit(in.CorrelationID)
+		err := s.txSrv.Commit(in.CorrelationID, in.BeginTxRes.TxRandomID)
 		if err != nil {
 			ok = false
 			return &transaction.CommonTxResponse{Ok: ok}, err
@@ -37,7 +37,7 @@ func (s *GService) Commit(ctx context.Context, in *transaction.CommonTxDoActionR
 func  (s *GService) Rollback(ctx context.Context, in *transaction.CommonTxDoActionRequest) (*transaction.CommonTxResponse, error){
 	ok := true
 	if in.BeginTxRes.IsRenew {
-		err := s.txSrv.Rollback(in.CorrelationID)
+		err := s.txSrv.Rollback(in.CorrelationID, in.BeginTxRes.TxRandomID)
 		if err != nil {
 			ok = false
 			return &transaction.CommonTxResponse{Ok: ok}, err
