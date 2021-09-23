@@ -3,9 +3,9 @@ module order
 go 1.16
 
 require (
-	github.com/PhongVX/micro-protos v0.0.0-20210912111658-1fbfb21bb736
+	github.com/PhongVX/micro-protos v1.0.0
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.3 // indirect
