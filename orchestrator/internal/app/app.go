@@ -2,6 +2,7 @@ package app
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/PhongVX/micro-protos/product"
 	"google.golang.org/grpc"
 	"log"
@@ -11,14 +12,11 @@ import (
 	"orchestrator/internal/redisx"
 	"orchestrator/internal/transactioncache"
 	"orchestrator/internal/transactionx"
+	"orchestrator/pkg/config"
 
 	"github.com/PhongVX/micro-protos/order"
 	"github.com/PhongVX/micro-protos/transaction"
 	"github.com/go-redis/redis/v8"
-)
-
-const (
-	gRPCAddress = "0.0.0.0:9999"
 )
 
 type ServerI interface {
@@ -26,7 +24,7 @@ type ServerI interface {
 	Stop()
 }
 
-func New(db *sql.DB, redisClient *redis.Client) ServerI {
+func New(conf *config.Config,db *sql.DB, redisClient *redis.Client) ServerI {
 	//Grpc Service
 	grpcServer := grpc.NewServer()
 	//TransactionCache
@@ -48,6 +46,7 @@ func New(db *sql.DB, redisClient *redis.Client) ServerI {
 
 	return &Server{
 		gServer: grpcServer,
+		Config: conf,
 	}
 
 }
@@ -57,10 +56,10 @@ func (a *Server) Stop() {
 }
 
 func (a *Server) Start() error {
-	lis, err := net.Listen("tcp", gRPCAddress)
-	log.Printf("gRPC Server listens at %s", gRPCAddress)
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%v", a.Config.Server.GPort))
+	log.Printf("gRPC Server listens at port %v", a.Config.Server.GPort)
 	if err != nil {
-		log.Fatalf("Failed to listen at %s %s", gRPCAddress, err)
+		log.Fatalf("gRPC Failed to listen at port %v %s", a.Config.Server.GPort, err)
 	}
 	return a.gServer.Serve(lis)
 }
