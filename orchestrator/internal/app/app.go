@@ -7,12 +7,12 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"orchestrator/internal/config"
 	"orchestrator/internal/orderx"
 	"orchestrator/internal/productx"
 	"orchestrator/internal/redisx"
 	"orchestrator/internal/transactioncache"
 	"orchestrator/internal/transactionx"
-	"orchestrator/pkg/config"
 
 	"github.com/PhongVX/micro-protos/order"
 	"github.com/PhongVX/micro-protos/transaction"

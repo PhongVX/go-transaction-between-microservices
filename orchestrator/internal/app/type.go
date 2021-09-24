@@ -2,7 +2,7 @@ package app
 
 import (
 	"google.golang.org/grpc"
-	"orchestrator/pkg/config"
+	"orchestrator/internal/config"
 )
 
 type (

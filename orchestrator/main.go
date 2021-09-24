@@ -5,7 +5,7 @@ import (
 	"flag"
 	"github.com/go-redis/redis/v8"
 	"log"
-	"orchestrator/pkg/config"
+	"orchestrator/internal/config"
 	"orchestrator/pkg/db"
 	"os"
 	"os/signal"
@@ -16,10 +16,12 @@ import (
 
 func main() {
 	var wait time.Duration
+	var confPath string
+	flag.StringVar(&confPath, "config_path", "./config/config.yaml", "The config path")
 	flag.DurationVar(&wait, "graceful_timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
-	//TODO Read from config file instead of hard code
-	conf, err := config.ReadConfig("./internal/config/config.yaml")
+
+	conf, err := config.ReadConfig(confPath)
 	if err != nil {
 		panic(err)
 	}
