@@ -8,7 +8,7 @@ import (
 
 type (
 	App struct {
-		Server *http.Server
+		Server     *http.Server
 		GRPCClient *grpc.ClientConn
 	}
 
@@ -17,4 +17,5 @@ type (
 		Stop(ctx context.Context) error
 		StopGRPC() error
 	}
+
 )
