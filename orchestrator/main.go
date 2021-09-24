@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/go-redis/redis/v8"
 	"log"
+	"orchestrator/internal/app"
 	"orchestrator/internal/config"
 	"orchestrator/pkg/db"
 	"os"
 	"os/signal"
 	"time"
 
-	"orchestrator/internal/app"
+	"github.com/go-redis/redis/v8"
 )
 
 func main() {

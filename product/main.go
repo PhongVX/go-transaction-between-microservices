@@ -7,16 +7,23 @@ import (
 	"os"
 	"os/signal"
 	"product/internal/app"
+	"product/internal/config"
 	"time"
 )
 
 func main() {
 	var wait time.Duration
-	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
+	var confPath string
+	flag.StringVar(&confPath, "config_path","./config/config.yaml", "the config path yaml file")
+	flag.DurationVar(&wait, "graceful_timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
+	conf, err := config.ReadConfig(confPath)
+	if err != nil {
+		panic(err)
+	}
 	// Run our server in a goroutine so that it doesn't block.
-	server := app.New()
+	server := app.New(conf)
 	go func() {
 		if err := server.Start(); err != nil {
 			log.Println(err)

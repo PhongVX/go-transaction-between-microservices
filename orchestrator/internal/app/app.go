@@ -3,8 +3,6 @@ package app
 import (
 	"database/sql"
 	"fmt"
-	"github.com/PhongVX/micro-protos/product"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"orchestrator/internal/config"
@@ -13,6 +11,9 @@ import (
 	"orchestrator/internal/redisx"
 	"orchestrator/internal/transactioncache"
 	"orchestrator/internal/transactionx"
+
+	"github.com/PhongVX/micro-protos/product"
+	"google.golang.org/grpc"
 
 	"github.com/PhongVX/micro-protos/order"
 	"github.com/PhongVX/micro-protos/transaction"
@@ -24,7 +25,7 @@ type ServerI interface {
 	Stop()
 }
 
-func New(conf *config.Config,db *sql.DB, redisClient *redis.Client) ServerI {
+func New(conf *config.Config, db *sql.DB, redisClient *redis.Client) ServerI {
 	//Grpc Service
 	grpcServer := grpc.NewServer()
 	//TransactionCache
@@ -46,7 +47,7 @@ func New(conf *config.Config,db *sql.DB, redisClient *redis.Client) ServerI {
 
 	return &Server{
 		gServer: grpcServer,
-		Config: conf,
+		Config:  conf,
 	}
 
 }

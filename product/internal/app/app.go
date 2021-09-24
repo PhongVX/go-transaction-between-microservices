@@ -2,24 +2,20 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
+	"product/internal/config"
 	"product/internal/route"
 
 	"github.com/PhongVX/micro-protos/product"
 	"github.com/PhongVX/micro-protos/transaction"
 )
 
-const (
-	serviceAddress = ":8082"
-	gRPCAddres = "localhost:9998"
-
-)
-
-func New() AppI {
+func New(conf *config.Config) AppI {
 	//=====================gRPC==========================
-	gRPCClient, err := grpc.Dial(gRPCAddres, grpc.WithInsecure())
+	gRPCClient, err := grpc.Dial(conf.GRPC.Address, grpc.WithInsecure())
 	if err != nil {
 		log.Panic("Cound't connect to gRPC Server")
 	}
@@ -32,7 +28,7 @@ func New() AppI {
 		log.Panicf("Failed Init Router")
 	}
 	httpServer := &http.Server{
-		Addr:    serviceAddress,
+		Addr:    fmt.Sprintf(":%v", conf.Server.Port),
 		Handler: r,
 	}
 	return &App{
@@ -46,7 +42,7 @@ func (a *App) StopGRPC() error {
 }
 
 func (a *App) Start() error {
-	log.Printf("Server is listening at %s", serviceAddress)
+	log.Printf("Server is listening at %s", a.Server.Addr)
 	return a.Server.ListenAndServe()
 }
 
