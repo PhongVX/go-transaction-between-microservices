@@ -16,7 +16,7 @@ import (
 
 func main() {
 	var wait time.Duration
-	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
+	flag.DurationVar(&wait, "graceful_timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 	//TODO Read from config file instead of hard code
 	conf, err := config.ReadConfig("./internal/config/config.yaml")
